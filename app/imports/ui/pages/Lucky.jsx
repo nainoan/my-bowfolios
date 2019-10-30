@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
-import { Container, Loader, Card, Image, Label, Header } from 'semantic-ui-react';
+import { Container, Loader, Card } from 'semantic-ui-react';
 import { withTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import { _ } from 'meteor/underscore';
@@ -8,6 +8,7 @@ import { Profiles, profilesName } from '../../api/profiles/Profiles';
 import { ProfilesInterests, profilesInterestsName } from '../../api/profiles/ProfilesInterests';
 import { ProfilesProjects, profilesProjectsName } from '../../api/profiles/ProfilesProjects';
 import { Projects, projectsName } from '../../api/projects/Projects';
+import { ProfileCard } from '../components/ProfileCard';
 
 /** Returns the Profile and associated Projects and Interests associated with the passed user email. */
 function getProfileData(email) {
@@ -19,35 +20,6 @@ function getProfileData(email) {
   return _.extend({ }, data, { interests, projects: projectPictures });
 }
 
-/** Component for layout out a Profile Card. */
-const MakeCard = (props) => (
-  <Card>
-    <Card.Content>
-      <Image floated='right' size='mini' src={props.profile.picture} />
-      <Card.Header>{props.profile.firstName} {props.profile.lastName}</Card.Header>
-      <Card.Meta>
-        <span className='date'>{props.profile.title}</span>
-      </Card.Meta>
-      <Card.Description>
-        {props.profile.bio}
-      </Card.Description>
-    </Card.Content>
-    <Card.Content extra>
-      {_.map(props.profile.interests,
-        (interest, index) => <Label key={index} size='tiny' color='teal'>{interest}</Label>)}
-    </Card.Content>
-    <Card.Content extra>
-      <Header as='h5'>Projects</Header>
-      {_.map(props.profile.projects, (project, index) => <Image key={index} size='mini' src={project}/>)}
-    </Card.Content>
-  </Card>
-);
-
-MakeCard.propTypes = {
-  profile: PropTypes.object.isRequired,
-};
-
-
 /** Renders the Profile Collection as a set of Cards. */
 class LuckyPage extends React.Component {
 
@@ -58,17 +30,18 @@ class LuckyPage extends React.Component {
 
   /** Render the page once subscriptions have been received. */
   renderPage() {
-    const emails = _.pluck(Profiles.find().fetch(), 'email');
-    const profileData = emails.map(email => getProfileData(email));
+    const email = _.sample(_.pluck(Profiles.find().fetch(), 'email'));
+    const profileData = getProfileData(email);
     return (
       <Container>
         <Card.Group>
-          {_.map(profileData, (profile, index) => <MakeCard key={index} profile={profile}/>)}
+        <ProfileCard profile={profileData}/>
         </Card.Group>
       </Container>
     );
   }
 }
+
 
 LuckyPage.propTypes = {
   ready: PropTypes.bool.isRequired,
